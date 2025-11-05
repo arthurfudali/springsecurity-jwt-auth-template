@@ -4,7 +4,6 @@ import com.dev.arthur.springsecurity_jwt_auth.entities.User;
 import com.dev.arthur.springsecurity_jwt_auth.entities.dtos.AuthDTO;
 import com.dev.arthur.springsecurity_jwt_auth.entities.dtos.RegisterDTO;
 import com.dev.arthur.springsecurity_jwt_auth.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager; // essa classe precisa de um Bean no config
@@ -34,7 +33,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity register(@RequestBody RegisterDTO data) {
         if(this.userRepository.findByUsername(data.username()) != null){
             return ResponseEntity.badRequest().build();
