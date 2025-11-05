@@ -1,5 +1,6 @@
 package com.dev.arthur.springsecurity_jwt_auth.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -13,10 +14,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity // isso possibilita a configuração manual do springSecurity
 public class SecurityConfigurations {
+
+    final SecurityFilter securityFilter;
+    public SecurityConfigurations(SecurityFilter securityFilter) {
+        this.securityFilter = securityFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -28,6 +35,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll() // permite requisições livres para o login
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll() // apenas para testes, pela lógica de roles, apenas admins deveriam poder criar outros admins
                         .anyRequest().authenticated()) // para o resto apenas logado
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // aplica o filtro antes da auth
                 .build();
     }
 
@@ -42,7 +50,7 @@ public class SecurityConfigurations {
     }
 
     @Bean
-    public RoleHierarchyImpl roleHierarchy(){
+    public RoleHierarchyImpl roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy(
                 "ROLE_ADMIN > ROLE_USER\n"
         );
