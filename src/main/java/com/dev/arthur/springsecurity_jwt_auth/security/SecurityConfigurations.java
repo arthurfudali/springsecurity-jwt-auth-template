@@ -25,6 +25,8 @@ public class SecurityConfigurations {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // define as configurações como STATELESS
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/product").hasRole("ADMIN") // para acessar o POST /products precisa ser admin
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll() // permite requisições livres para o login
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll() // apenas para testes, pela lógica de roles, apenas admins deveriam poder criar outros admins
                         .anyRequest().authenticated()) // para o resto apenas logado
                 .build();
     }
