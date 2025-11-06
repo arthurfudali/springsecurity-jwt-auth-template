@@ -26,6 +26,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("spring-auth-api")
                     .withSubject(user.getUsername())
+                    .withClaim("role", user.getRole().name())
                     .withExpiresAt(generateExpirationDate())
                     .sign(algorithm);
 
@@ -34,7 +35,7 @@ public class TokenService {
         }
     }
 
-    public String validateToken(String token) {
+    public String extractSubject(String token) {
         try {
             return JWT.require(algorithm)
                     .withIssuer("spring-auth-api")
