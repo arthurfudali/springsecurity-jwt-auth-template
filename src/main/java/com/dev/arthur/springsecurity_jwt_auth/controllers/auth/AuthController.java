@@ -7,6 +7,8 @@ import com.dev.arthur.springsecurity_jwt_auth.entities.dtos.TokenResponseDTO;
 import com.dev.arthur.springsecurity_jwt_auth.entities.dtos.UserResponseDTO;
 import com.dev.arthur.springsecurity_jwt_auth.repositories.UserRepository;
 import com.dev.arthur.springsecurity_jwt_auth.services.auth.TokenService;
+import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,7 +30,6 @@ public class AuthController {
     private final UserRepository userRepository;
     private final TokenService tokenService;
 
-
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, TokenService tokenService, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
@@ -41,7 +42,6 @@ public class AuthController {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.username(), data.password());
         var auth = authenticationManager.authenticate(usernamePassword);
         var token = tokenService.generateToken((User) auth.getPrincipal());
-
         return ResponseEntity.ok(new TokenResponseDTO(token));
     }
 
@@ -53,6 +53,6 @@ public class AuthController {
         String encryptedPassword = passwordEncoder.encode(data.password());
         User newUser = new User(data.username(), encryptedPassword, data.role());
         userRepository.save(newUser);
-        return ResponseEntity.ok(new UserResponseDTO(newUser.getUsername(), newUser.getRole().name()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponseDTO(newUser.getUsername(), newUser.getRole().name()));
     }
 }
