@@ -21,10 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager; // essa classe precisa de um Bean no config
+    // Both are configurable using a @Bean on the config class
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
+
     private final UserRepository userRepository;
     private final TokenService tokenService;
-    private final PasswordEncoder passwordEncoder;
+
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, TokenService tokenService, PasswordEncoder passwordEncoder) {
         this.authenticationManager = authenticationManager;

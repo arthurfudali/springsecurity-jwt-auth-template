@@ -31,7 +31,7 @@ public class TokenService {
                     .sign(algorithm);
 
         } catch (JWTCreationException e) {
-            throw new RuntimeException("Error while generating JWT token", e); // todo: create personalized exception
+            throw new RuntimeException("Error while generating JWT token", e);
         }
     }
 

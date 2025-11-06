@@ -19,8 +19,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableWebSecurity // isso possibilita a configuração manual do springSecurity
-@EnableMethodSecurity
+@EnableWebSecurity // Enables manual Spring Security configuration
+@EnableMethodSecurity // Enables @PreAuthorize("hasRole('...')") annotations
 public class SecurityConfigurations {
 
     final SecurityFilter securityFilter;
@@ -31,33 +31,40 @@ public class SecurityConfigurations {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity.csrf(AbstractHttpConfigurer::disable).sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // define as configurações como STATELESS
+        return httpSecurity.csrf(AbstractHttpConfigurer::disable) // Disable CSRF since we're using stateless authentication
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))// No session will be created or used
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(HttpMethod.POST, "/products").hasRole("ADMIN") // para acessar o POST /products precisa ser admin
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll() // permite requisições livres para o login
-                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll() // apenas para testes, pela lógica de roles, apenas admins deveriam poder criar outros admins
-                        .anyRequest().authenticated()) // para o resto apenas logado
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // aplica o filtro antes da auth
+                        .requestMatchers(HttpMethod.POST, "/products").hasRole("ADMIN")  // Only ADMIN users can POST /products
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll() // Allow everyone to access login
+                        .requestMatchers(HttpMethod.POST, "/auth/register").permitAll() // Open for testing; in production, only ADMIN should create new users
+                        .anyRequest().authenticated()) // All other endpoints require authentication
+                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class) // Apply JWT filter before username/password authentication
                 .build();
     }
 
     @Bean
+
     public RoleHierarchy roleHierarchy() {
+        // Defines a role hierarchy where ADMIN inherits all USER permissions
         return RoleHierarchyImpl.fromHierarchy("ROLE_ADMIN > ROLE_USER");
     }
 
     @Bean
+
     public RoleHierarchyAuthoritiesMapper authoritiesMapper(RoleHierarchy roleHierarchy) {
+        // Maps granted authorities according to the defined role hierarchy
         return new RoleHierarchyAuthoritiesMapper(roleHierarchy);
     }
 
     @Bean
     public AuthenticationManager authenticationManagerBean(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        // Exposes the AuthenticationManager as a Spring Bean to handle authentication requests
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { // responsável pela criptografia das senhas
+    public PasswordEncoder passwordEncoder() {
+        // Handles password encryption using the BCrypt hashing algorithm
         return new BCryptPasswordEncoder();
     }
 }
